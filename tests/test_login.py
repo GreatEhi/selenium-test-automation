@@ -1,21 +1,18 @@
+import pytest
+import json
 from pages.login_page import LoginPage
 
-def test_login_success(driver):
+def load_test_data():
+    with open("data/login_data.json") as f:
+        return json.load(f)
+
+@pytest.mark.parametrize("data", load_test_data())
+def test_login(driver, data):
     login_page = LoginPage(driver)
 
     login_page.open()
-    login_page.enter_username("tomsmith")
-    login_page.enter_password("SuperSecretPassword!")
+    login_page.enter_username(data["username"])
+    login_page.enter_password(data["password"])
     login_page.click_login()
 
-    assert "Secure Area" in driver.page_source
-
-def test_login_invalid(driver):
-    login_page = LoginPage(driver)
-
-    login_page.open()
-    login_page.enter_username("wronguser")
-    login_page.enter_password("wrongpass")
-    login_page.click_login()
-
-    assert "Your username is invalid" in driver.page_source
+    assert data["expected"] in driver.page_source
